@@ -91,4 +91,5 @@ public sealed class CurrencyConverter
         var euroValue = from == Currency.EUR ? amount : amount / fromRate;
         return to == Currency.EUR ? euroValue : euroValue * toRate;
     }
+    
 }
