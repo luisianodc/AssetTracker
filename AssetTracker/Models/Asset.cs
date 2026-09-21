@@ -140,7 +140,6 @@ public sealed class Smartphone : Asset
 
 
 
-
 // Represents a computer asset.
 public sealed class Computer : Asset
 {
