@@ -9,12 +9,14 @@ public sealed class ApplicationUI
     private readonly TheAssetTracker tracker;
     private readonly CurrencyConverter currencyConverter;
 
+    
     public ApplicationUI(TheAssetTracker tracker, CurrencyConverter currencyConverter)
     {
         this.tracker = tracker;
         this.currencyConverter = currencyConverter;
     }
 
+    
     // Starts the interactive menu loop.
     public void Start()
     {
@@ -50,8 +52,6 @@ public sealed class ApplicationUI
             }
         }
     }
-
-
     
 
     // Displays assets with colour-coded end-of-life warnings.
@@ -66,7 +66,6 @@ public sealed class ApplicationUI
             Console.WriteLine($"{asset.Id} {asset.AssetType,-11} {asset.Brand,-12} {asset.Model,-18} {asset.Office.Name,-8} {asset.PurchaseDate:yyyy-MM-dd} {asset.LocalPrice,12} {asset.EndOfLifeStatus}");
             Console.ResetColor();
         }
-
         Pause();
     }
 
@@ -81,11 +80,9 @@ public sealed class ApplicationUI
                 case EndOfLifeStatus.Red:
                     Console.ForegroundColor = ConsoleColor.Red;
                     break;
-
                 case EndOfLifeStatus.Yellow:
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     break;
-
                 default:
                     Console.ForegroundColor = ConsoleColor.Gray;
                     break;
@@ -164,10 +161,10 @@ public sealed class ApplicationUI
         {
             Console.WriteLine(UI.priceLocal);
         }
-
         Console.WriteLine($"Office {asset.Office.Name}");
     }
 
+    
     // Searches for assets by brand or model.
     private void SearchAssets()
     {
@@ -175,6 +172,7 @@ public sealed class ApplicationUI
         DisplayAssets(tracker.Search(text));
     }
 
+    
     // Edits the main user-editable asset fields.
     private void EditAsset()
     {
@@ -199,6 +197,7 @@ public sealed class ApplicationUI
         Pause();
     }
 
+    
     // Removes an asset after confirmation.
     private void RemoveAsset()
     {
@@ -217,10 +216,10 @@ public sealed class ApplicationUI
         {
             Console.WriteLine("Removal cancelled.");
         }
-
         Pause();
     }
 
+    
     // Shows assets in pages as the optional pagination challenge.
     private void SplitAssetsIntoPages()
     {
@@ -240,6 +239,7 @@ public sealed class ApplicationUI
         }
     }
 
+    
     // Exports a CSV report to the application folder.
     private void ExportCsv()
     {
@@ -263,7 +263,6 @@ public sealed class ApplicationUI
             {
                 tracker.UpdateLocalPrice(asset);
             }
-
             tracker.Save();
             Console.WriteLine(UI.ratesUpdated);
         }
@@ -271,10 +270,10 @@ public sealed class ApplicationUI
         {
             Console.WriteLine(UI.notUpdated);
         }
-
         Pause();
     }
 
+    
     // Finds an asset using its unique ID.
     private Asset? FindAssetById()
     {
@@ -292,7 +291,6 @@ public sealed class ApplicationUI
             Console.WriteLine("Asset not found.");
             Pause();
         }
-
         return asset;
     }
 
@@ -301,30 +299,41 @@ public sealed class ApplicationUI
     private static Office ReadOffice()
     {
         var office = ReadChoice(UI.officeChoices, "1", "2", "3", "4");
-        return office switch
+        switch (office)
         {
-            "1" => new Office("Sweden", Currency.SEK),
-            "2" => new Office("USA", Currency.USD),
-            "3" => new Office("Turkey", Currency.TRY),
-            _ => new Office("Germany", Currency.EUR)
-        };
+            case "1":
+                return new Office("Sweden", Currency.SEK);
+            case "2":
+                return new Office("USA", Currency.USD);
+            case "3":
+                return new Office("Turkey", Currency.TRY);
+            default:
+                return new Office("Germany", Currency.EUR);
+        }
     }
 
+    
     // Reads an office while allowing the existing value to be kept.
     private static Office ReadOfficeWithDefault(Office current)
     {
         Console.WriteLine(UI.officeChoicesExt);
         var input = Console.ReadLine();
-        return input switch
+        switch (input)
         {
-            "1" => new Office("Sweden", Currency.SEK),
-            "2" => new Office("USA", Currency.USD),
-            "3" => new Office("Turkey", Currency.TRY),
-            "4" => new Office("Germany", Currency.EUR),
-            _ => current
-        };
+            case "1":
+                return new Office("Sweden", Currency.SEK);
+            case "2":
+                return new Office("USA", Currency.USD);
+            case "3":
+                return new Office("Turkey", Currency.TRY);
+            case "4":
+                return new Office("Germany", Currency.EUR);
+            default:
+                return current;
+        }
     }
 
+    
     // Reads and validates a date from the console.
     private static DateTime ReadDate(string prompt)
     {
@@ -336,6 +345,7 @@ public sealed class ApplicationUI
         }
     }
 
+    
     // Reads a decimal monetary value from the console.
     private static decimal ReadDecimal(string prompt)
     {
@@ -347,6 +357,7 @@ public sealed class ApplicationUI
         }
     }
 
+    
     // Reads one of the supported currencies.
     private static Currency ReadCurrency(string prompt)
     {
@@ -358,6 +369,7 @@ public sealed class ApplicationUI
         }
     }
 
+    
     // Reads a required non-empty string.
     private static string ReadRequired(string prompt)
     {
@@ -369,6 +381,7 @@ public sealed class ApplicationUI
         }
     }
 
+    
     // Reads a string from the console.
     private static string ReadText(string prompt)
     {
@@ -376,6 +389,7 @@ public sealed class ApplicationUI
         return Console.ReadLine()?.Trim() ?? string.Empty;
     }
 
+    
     // Reads a menu choice from the supplied valid choices.
     private static string ReadChoice(string prompt, params string[] choices)
     {
@@ -387,6 +401,7 @@ public sealed class ApplicationUI
         }
     }
 
+    
     // Reads a string but keeps the existing value when Enter is pressed.
     private static string ReadWithDefault(string label, string current)
     {
@@ -395,6 +410,7 @@ public sealed class ApplicationUI
         return string.IsNullOrWhiteSpace(value) ? current : value.Trim();
     }
 
+    
     // Reads a date but keeps the existing value when Enter is pressed.
     private static DateTime ReadDateWithDefault(string label, DateTime current)
     {
@@ -408,6 +424,7 @@ public sealed class ApplicationUI
         }
     }
 
+    
     // Reads a decimal but keeps the existing value when Enter is pressed.
     private static decimal ReadDecimalWithDefault(string label, decimal current)
     {
@@ -421,6 +438,7 @@ public sealed class ApplicationUI
         }
     }
 
+    
     // Reads a currency but keeps the existing value when Enter is pressed.
     private static Currency ReadCurrencyWithDefault(string label, Currency current)
     {
@@ -434,6 +452,7 @@ public sealed class ApplicationUI
         }
     }
 
+    
     // Displays assets without changing pagination state.
     private static void DisplayAssetsWithoutPause(IEnumerable<Asset> assets)
     {
