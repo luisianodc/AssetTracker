@@ -3,7 +3,6 @@
 namespace AssetTracker;
 
 
-
 // Main application service that manages assets, sorting, searching and persistence.
 public sealed class TheAssetTracker
 {
@@ -17,23 +16,41 @@ public sealed class TheAssetTracker
         this._dataStore = dataStore;
     }
 
+    
     // Provides read-only access to the current asset collection.
-    public IReadOnlyList<Asset> Assets => assets;
+    public IReadOnlyList<Asset> Assets
+    {
+        get
+        {
+            return assets;
+        }
+    }
 
+    
     // Indicates whether at least one asset is currently stored.
-    public bool HasAssets => assets.Count > 0;
+    public bool HasAssets
+    {
+        get
+        {
+            return assets.Count > 0;   
+        }
+    }
 
+    
     // Adds an asset after checking that its ID is unique.
     public void AddAsset(Asset asset)
     {
-        if (assets.Any(existing => existing.Id == asset.Id))
+        foreach (Asset existing in assets)
         {
-            throw new InvalidOperationException("An asset with that ID already exists.");
+            if (existing.Id == asset.Id)
+            {
+                throw new InvalidOperationException("An asset with that ID already exists.");
+            }
         }
-
         assets.Add(asset);
     }
 
+    
     // Removes an asset by its unique ID.
     public bool RemoveAsset(Guid id)
     {
@@ -41,25 +58,105 @@ public sealed class TheAssetTracker
         return asset is not null && assets.Remove(asset);
     }
 
+    
     // Finds assets whose brand or model contains the search text.
     public IReadOnlyList<Asset> Search(string searchText)
     {
-        return assets
-            .Where(asset => asset.Brand.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                            asset.Model.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(asset => asset.Brand)
-            .ThenBy(asset => asset.Model)
-            .ToList();
+        List<Asset> results = new List<Asset>();
+
+        foreach (Asset asset in assets)
+        {
+            if (asset.Brand.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                asset.Model.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            {
+                results.Add(asset);
+            }
+        }
+
+        results.Sort(delegate (Asset first, Asset second)
+        {
+            int brandResult = string.Compare(
+                first.Brand,
+                second.Brand,
+                StringComparison.OrdinalIgnoreCase);
+
+            if (brandResult != 0)
+            {
+                return brandResult;
+            }
+
+            return string.Compare(
+                first.Model,
+                second.Model,
+                StringComparison.OrdinalIgnoreCase);
+        });
+
+        return results;
     }
 
+    
     // Sorts assets by asset type and then purchase date as required in Level 2.
     public IReadOnlyList<Asset> SortByTypeAndPurchaseDate()
-        => assets.OrderBy(asset => asset.AssetType).ThenBy(asset => asset.PurchaseDate).ToList();
+    {
+        List<Asset> sortedAssets = new List<Asset>();
 
+        foreach (Asset asset in assets)
+        {
+            sortedAssets.Add(asset);
+        }
+
+        sortedAssets.Sort(delegate (Asset first, Asset second)
+        {
+            int typeResult = string.Compare(
+                first.AssetType,
+                second.AssetType,
+                StringComparison.OrdinalIgnoreCase);
+
+            if (typeResult != 0)
+            {
+                return typeResult;
+            }
+
+            return DateTime.Compare(
+                first.PurchaseDate,
+                second.PurchaseDate);
+        });
+
+        return sortedAssets;
+    }
+    
+    
     // Sorts assets by office and then purchase date as required in Level 3.
     public IReadOnlyList<Asset> SortByOfficeAndPurchaseDate()
-        => assets.OrderBy(asset => asset.Office.Name).ThenBy(asset => asset.PurchaseDate).ToList();
+    {
+        List<Asset> sortedAssets = new List<Asset>();
 
+        foreach (Asset asset in assets)
+        {
+            sortedAssets.Add(asset);
+        }
+
+        sortedAssets.Sort(delegate (Asset first, Asset second)
+        {
+            int officeResult = string.Compare(
+                first.Office.Name,
+                second.Office.Name,
+                StringComparison.OrdinalIgnoreCase);
+
+            if (officeResult != 0)
+            {
+                return officeResult;
+            }
+
+            return DateTime.Compare(
+                first.PurchaseDate,
+                second.PurchaseDate);
+        });
+
+        return sortedAssets;
+    }
+    
+    
     // Returns one page of assets for the optional pagination challenge.
     public IReadOnlyList<Asset> GetPage(int pageNumber, int pageSize)
     {
@@ -87,12 +184,29 @@ public sealed class TheAssetTracker
     public void Load()
     {
         assets.Clear();
+
         var loadedAssets = _dataStore.Load();
-        foreach (var asset in loadedAssets.GroupBy(item => item.Id).Select(group => group.First()))
+
+        foreach (Asset asset in loadedAssets)
         {
-            assets.Add(asset);
+            bool alreadyExists = false;
+
+            foreach (Asset existingAsset in assets)
+            {
+                if (existingAsset.Id == asset.Id)
+                {
+                    alreadyExists = true;
+                    break;
+                }
+            }
+
+            if (!alreadyExists)
+            {
+                assets.Add(asset);
+            }
         }
     }
+    
 
     // Exports all assets as a CSV report.
     public void ExportCsv(string path) => _dataStore.ExportCsv(assets, path);
