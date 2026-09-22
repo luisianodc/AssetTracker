@@ -603,7 +603,7 @@ https://github.com/luisianodc/AssetTracker.git
 
 ## Author
 
-**Ivo**
+**Luisiano Calill**
 
 Software Engineer / C# and .NET Developer
 
